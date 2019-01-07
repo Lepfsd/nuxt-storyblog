@@ -1,59 +1,69 @@
 <template>
-  <section class="container">
-    <div>
-      <logo/>
-      <h1 class="title">
-        nuxt-storyblog
-      </h1>
-      <h2 class="subtitle">
-        awesome blog
-      </h2>
-      <div class="links">
-        <a href="https://nuxtjs.org/" target="_blank" class="button--green">Documentation</a>
-        <a href="https://github.com/nuxt/nuxt.js" target="_blank" class="button--grey">GitHub</a>
-      </div>
-    </div>
+  <section id="posts">
+    <PostPreview 
+      v-for= "post in posts"
+      :key="post.id"
+      :title="post.title"
+      :excerpt="post.previewText"
+      :thumbnailImage="post.thumbnailUrl"
+      :id="post.id" />
   </section>
 </template>
 
 <script>
 import Logo from '~/components/Logo.vue'
+import PostPreview from '@/components/Blog/PostPreview';
 
 export default {
   components: {
-    Logo
+    PostPreview
+  },
+  asyncData(context){
+    return context.app.$storyapi
+      .get("cdn/stories", {
+        version: "draft",
+        starts_width: 'blog/'
+      }).
+      then(res => {
+        return {
+          posts: res.data.stories.map(bp => {
+            return {
+              id: bp.slug,
+              title: bp.content.title,
+              previewText: bp.content.summary,
+              thumbnailUrl: bp.content.thumbnail
+            };
+          })
+        };
+      });
   }
-}
+  /*data(){
+    return {
+      posts: [
+        {
+          title: "A new beginig",
+          previewText: 'this will be awesome, dont miss it',
+          thumbnailUrl: 'https://food.fnr.sndimg.com/content/dam/images/food/fullset/2015/12/1/3/WU1207H_Spaghetti-Carbonara_s4x3.jpg.rend.hgtvcom.616.462.suffix/1452882192060.jpeg',
+          id: 'a-new-beginig'
+        },
+        {
+          title: "A second beginig",
+          previewText: 'this will be awesome, dont miss it',
+          thumbnailUrl: 'https://food.fnr.sndimg.com/content/dam/images/food/fullset/2015/12/1/3/WU1207H_Spaghetti-Carbonara_s4x3.jpg.rend.hgtvcom.616.462.suffix/1452882192060.jpeg',
+          id: 'a-second-beginig'
+        }
+      ]
+    };
+  }*/
+};
 </script>
 
-<style>
-.container
-{
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-.title
-{
-  font-family: "Quicksand", "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* 1 */
-  display: block;
-  font-weight: 300;
-  font-size: 100px;
-  color: #35495e;
-  letter-spacing: 1px;
-}
-.subtitle
-{
-  font-weight: 300;
-  font-size: 42px;
-  color: #526488;
-  word-spacing: 5px;
-  padding-bottom: 15px;
-}
-.links
-{
-  padding-top: 15px;
-}
+<style scoped>
+  #posts {
+    padding-top: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
 </style>
